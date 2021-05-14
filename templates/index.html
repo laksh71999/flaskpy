@@ -1,0 +1,71 @@
+<html>
+
+    <head>
+        <title></title>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    </head>
+
+    <body>
+            <form method="post">
+            <div class="rangeslider" style="float:left; margin: 16px;">
+                <img src="/static/steering.png" id="steering" alt="Steering Image"><br>
+
+                <input type="range" min="1" max="50" value="25" class="myslider" id="sliderRange" style="width: 100%;"><br>
+                <center><input type="text" value="25" name="sliderValue" id="sliderValue" style="text-align: center;"></center>
+            </div>
+            <center><div style="float:left; width: 10%; margin: 16px;">
+                <p align="center"><input type="button" value="Forward" id="forward" onclick="storeval(this)"></p><br>
+                <p align="center"><input type="button" value="Backward" id="backward" onclick="storeval(this)"></p><br>
+                <p align="center"><input type="button" value="Stop" id="stop" onclick="storeval(this)"></p>
+            </div></center>
+            </form>
+
+        <script>
+            var socket = io.connect('http://0.0.0.0:5001');
+            socket.on('connect', function() {
+            console.log('User has connected!');
+            });
+            var rangeslider = document.getElementById("sliderRange");
+            var current;
+
+
+            rangeslider.oninput = function() {
+                current = this.value;
+                document.getElementById("sliderValue").value = current;
+                var steering = document.getElementById('steering');
+                var steerAngle = 90/25;
+                if (current < 25) {
+                    steering.style.transform = 'rotate(-' + String(steerAngle * (25 - current)) + 'deg)'
+                }
+                else if (current > 25) {
+                    steering.style.transform = 'rotate(' + String(steerAngle * (current - 25)) + 'deg)'
+                }
+                else {
+                    steering.style.transform = 'rotate(0deg)'
+                }
+
+                socket.send(current);
+
+            }
+
+            function storeval(el){
+             var act = el.getAttribute('value');
+             console.log(act)
+             socket.send(act);
+            }
+
+            rangeslider.onchange = function() {
+                current = 25;
+                document.getElementById("sliderValue").value = current;
+                document.getElementById("sliderRange").value = current;
+                var steering = document.getElementById('steering');
+                steering.style.transform = 'rotate(0deg)'
+                var cur = current.toString();
+                socket.send(cur);
+            }
+</script>
+
+    </body>
+</html>
